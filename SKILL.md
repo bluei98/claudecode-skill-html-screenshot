@@ -1,6 +1,6 @@
 ---
 name: html-screenshot
-description: "HTML 파일/폴더 → PC & Mobile 렌더링 스크린샷 PNG/JPEG export. 로컬 HTTP 서버로 안전하게 렌더링. Trigger: /html-screenshot, 'HTML 스크린샷', 'html screenshot', 'HTML 캡쳐', 'HTML 캡처', '웹페이지 캡처', 'PC/모바일 캡처', 'render HTML'"
+description: "HTML 파일/폴더 → PC & Mobile 렌더링 스크린샷 PNG/JPEG export. 로컬 HTTP 서버로 안전하게 렌더링. Trigger: /html-screenshot, 'HTML 스크린샷', 'HTML 캡처', 'HTML 캡쳐', '웹페이지 캡처', 'PC/모바일 캡처', 'html screenshot', 'render HTML', 'webpage capture', 'PC mobile capture', 'HTML スクリーンショット', 'HTML キャプチャ', 'ウェブページ キャプチャ', 'PC・モバイル キャプチャ'"
 ---
 
 # HTML Screenshot — Execution Skill

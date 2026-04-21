@@ -1,33 +1,72 @@
-# html-screenshot
+# 🖼️ html-screenshot
 
-> [한국어](README.ko.md) · **日本語** · [English](README.md)
+> ローカル HTML を PC・Mobile ビューポートでレンダリングし、**横並び合成の 1 枚の画像** として書き出す Claude Code スキル。
 
-ローカル HTML ファイルを PC・Mobile ビューポートでレンダリングし、両方のビューを横並びに合成して 1 枚の PNG/JPEG として書き出す Claude Code スキルです。Playwright(Chromium headless)と自動起動するローカル HTTP サーバーを利用するため、相対パスの `CSS/JS/img/fetch` がそのまま動作します。
+<p align="left">
+  <a href="README.md"><img alt="English" src="https://img.shields.io/badge/lang-English-blue.svg"></a>
+  <a href="README.ko.md"><img alt="한국어" src="https://img.shields.io/badge/lang-한국어-red.svg"></a>
+  <a href="README.ja.md"><img alt="日本語" src="https://img.shields.io/badge/lang-日本語-green.svg"></a>
+</p>
+
+<p align="left">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.9%2B-blue.svg">
+  <img alt="Playwright" src="https://img.shields.io/badge/playwright-chromium-2EAD33.svg">
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-skill-D97757.svg">
+</p>
+
+---
+
+## なぜ作ったのか
+
+モバイル対応のスクリーンショットは通常、DevTools と外部画像ツールを行き来したり、デバイスごとに別ファイルとして書き出す必要があり、PR・ブログ・チャットに貼ったときに視認性が落ちがちです。**1 枚の合成画像** は同じ高さでコントラストのあるキャンバスに並んで配置されるため、一目で把握でき、どこにでも綺麗に埋め込めます。
+
+```
+ ┌──────────────────────────┐ ┌──────┐
+ │                          │ │      │
+ │           PC             │ │ Mob  │   ← 単一の PNG/JPEG
+ │       (1920×1080)        │ │ ile  │     余白付きキャンバス、グラデーション背景
+ │                          │ │      │     パネル高さを自動正規化
+ └──────────────────────────┘ └──────┘
+```
+
+## 主な機能
+
+- ⚡ **コマンド 1 つで 1 枚の画像** PC + Mobile を横並び合成
+- 🎨 **背景プリセット 14 種** + 単色・グラデーションのカスタム指定 (diagonal / vertical / horizontal)
+- 📐 **パネル高さの自動正規化** PC と Mobile が綺麗に揃う(アップスケールなし)
+- 📱 **タブレットパネル オプション** (`--tablet`) — PC と Mobile の間に挿入
+- 🌐 **ローカル HTTP サーバー** を自動起動 — 相対パスの `CSS / JS / img / fetch` がそのまま動作 (`file://` の罠を回避)
+- 📂 **ファイルまたはフォルダ入力** — `.html` を再帰探索、出力は元のツリー構造を保持
+- 🔄 **フルページ または ビューポート** キャプチャ (`--full-page`)
+- 🧩 **デバイス別個別保存** モード (`--separate`) — 元のピクセル解像度を保持
+- 🤖 **Claude Code 専用** — `/html-screenshot <path>` で呼び出し
 
 ## クイックスタート
 
-```text
+```bash
+# 単一ファイル → 元ファイル隣に ./index.png
 /html-screenshot ./index.html
+
+# フォルダ → ./site/screenshots/{tree}/{stem}.png
 /html-screenshot ./site/ --full-page --tablet
+
+# 洒落たプリセット背景 + PC サイズのカスタム
 /html-screenshot ./page.html --bg sunset --pc-size 1440x900
 ```
 
-デフォルト出力: 単一ファイルなら元ファイルの隣に `{stem}.png`、フォルダ指定なら `{folder}/screenshots/` 配下に元のツリー構造を保ったまま保存。
-
 ## インストール
-
-ディレクトリ単体で完結します。実行時依存:
 
 ```bash
 pip install playwright pillow
 python -m playwright install chromium
 ```
 
-フォルダを `~/.claude/skills/html-screenshot/` に配置するか、git サブモジュールとして接続してください(下記参照)。
+フォルダを `~/.claude/skills/html-screenshot/` に配置するか、git サブモジュールとして接続してください。
 
 ## トリガー
 
-`/html-screenshot`, "html screenshot", "HTML スクリーンショット", "HTML キャプチャ", "render HTML"
+`/html-screenshot` · `HTML スクリーンショット` · `HTML キャプチャ` · `ウェブページ キャプチャ` · `PC・モバイル キャプチャ`
 
 ## フラグ
 
@@ -56,11 +95,11 @@ python -m playwright install chromium
 
 `--bg` は 3 種類の指定方法に対応します:
 
-**プリセット名** (キュレーション済み):
+### 1. プリセット
 
 | プリセット | 種別 | 色 |
 |-----------|------|-----|
-| `slate` (デフォルト) | solid | `#e2e8f0` |
+| `slate` *(デフォルト)* | solid | `#e2e8f0` |
 | `white` / `black` / `dark` | solid | white / black / `#0f172a` |
 | `purple` | gradient | `#667eea → #764ba2` |
 | `sunset` | gradient | `#ff7e5f → #feb47b` |
@@ -73,29 +112,60 @@ python -m playwright install chromium
 | `candy` | gradient | `#ee9ca7 → #ffdde1` |
 | `sky` | gradient | `#74b9ff → #a29bfe` |
 
-**カスタム単色**: CSS 名 または `#hex` — `--bg "#1e293b"`
+### 2. 単色
 
-**カスタムグラデーション**: `color1,color2[,direction]`(direction は `diagonal`(デフォルト)/`vertical`/`horizontal`)— `--bg "#0f172a,#1e293b,vertical"`
+CSS 名 または `#hex`:
+
+```bash
+--bg "#1e293b"
+--bg "lavender"
+```
+
+### 3. グラデーション
+
+`color1,color2[,direction]` (direction は `diagonal` *(デフォルト)* / `vertical` / `horizontal`):
+
+```bash
+--bg "#0f172a,#1e293b,vertical"
+--bg "#667eea,#764ba2"          # diagonal
+```
 
 ## 出力ルール
 
-| 入力 | デフォルト出力 (合成) | `--separate` 指定時 |
-|------|---------------------|---------------------|
+| 入力 | デフォルト (合成) | `--separate` 指定時 |
+|------|------------------|---------------------|
 | `./foo.html` | `./foo.png` | `./foo-pc.png`, `./foo-mobile.png` |
 | `./site/` | `./site/screenshots/{tree}/{stem}.png` | `./site/screenshots/{tree}/{stem}-{device}.png` |
 
-合成モードでは、各パネルを **最も小さいパネルの高さ** に合わせてダウンスケール(アップスケールはなし)した上で、PC → Tablet → Mobile の順に余白付きキャンバスへ横並び配置します。
+合成モードでは、各パネルを **最も小さいパネルの高さ** に合わせてダウンスケール(アップスケールはなし)した上で、PC → Tablet → Mobile の順に左→右に配置します。
 
-## 補足
+## ヒント
 
-- 入力ディレクトリをルートとするローカル HTTP サーバーがランダムポートで自動起動し、キャプチャ完了後にシャットダウンされます。`file://` プロトコル特有の CORS / fetch の問題を回避できます。
-- 長いページには `--full-page` を、プレゼン用の絵作りには `--bg dark --padding 40` の組み合わせがおすすめです。
-- `--separate` モードではデバイス別の元ピクセル解像度がそのまま保持されます(リサイズなし)。
+> 💡 長いページには `--full-page` を、プレゼン用の絵作りには `--bg dark --padding 40` の組み合わせがおすすめです。
+>
+> 💡 `--separate` モードはデバイス別の元ピクセル解像度をそのまま保持 — さらなる合成用の素材が必要な場合に便利。
+>
+> 💡 ローカル HTTP サーバーはランダムポートで起動し、キャプチャ後に自動シャットダウンされます(プロセス残存なし)。
 
-## 開発の動機
+## ロードマップ
 
-モバイル対応のスクリーンショットは通常、DevTools と外部ツールを行き来したり、デバイスごとに別ファイルを作る必要があり、チャット・PR・ブログ記事に貼ったときに視認性が落ちがちでした。同じ高さで横並びに合成された 1 枚の画像は一目で把握でき、どこにでも綺麗に埋め込めます。
+- [ ] デバイスクローム(PC のブラウザフレーム、モバイルのベゼル)
+- [ ] パネルのドロップシャドウ
+- [ ] WebP 出力
+- [ ] スクロールアニメーションの GIF / MP4
+
+PR 歓迎です。
 
 ## ライセンス
 
-MIT
+[MIT](LICENSE) © Haru
+
+## 作者
+
+**Haru** — メイカーやライターのためのツールを作っています。
+
+- 🧵 Threads · [@life.of.haru](https://www.threads.net/@life.of.haru)
+- 📷 Instagram · [@life.of.haru](https://www.instagram.com/life.of.haru)
+- ✍️ ブログ · [harulogs.com](https://harulogs.com/ja)
+
+このスキルが時間の節約になったら、リポジトリへの ⭐ をいただけると嬉しいです。

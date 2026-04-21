@@ -1,39 +1,78 @@
-# html-screenshot
+# 🖼️ html-screenshot
 
-> [한국어](README.ko.md) · [日本語](README.ja.md) · **English**
+> Render local HTML at PC + Mobile viewports and export them **side-by-side** as a single image. A Claude Code skill.
 
-A Claude Code skill that renders local HTML files at PC and Mobile viewports, then composites the two views side-by-side into a single PNG/JPEG. Built on Playwright (Chromium headless) with an automatic local HTTP server so relative `CSS/JS/img/fetch` paths work out of the box.
+<p align="left">
+  <a href="README.md"><img alt="English" src="https://img.shields.io/badge/lang-English-blue.svg"></a>
+  <a href="README.ko.md"><img alt="한국어" src="https://img.shields.io/badge/lang-한국어-red.svg"></a>
+  <a href="README.ja.md"><img alt="日本語" src="https://img.shields.io/badge/lang-日本語-green.svg"></a>
+</p>
+
+<p align="left">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.9%2B-blue.svg">
+  <img alt="Playwright" src="https://img.shields.io/badge/playwright-chromium-2EAD33.svg">
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-skill-D97757.svg">
+</p>
+
+---
+
+## Why
+
+Mobile responsive screenshots usually live in two places — DevTools, then external image tools — or get exported as separate per-device files that don't read well in PRs, blog posts, or chat. **One composite image** with consistent height and a contrasting canvas reads at a glance and embeds cleanly anywhere.
+
+```
+ ┌──────────────────────────┐ ┌──────┐
+ │                          │ │      │
+ │           PC             │ │ Mob  │   ← single PNG/JPEG
+ │       (1920×1080)        │ │ ile  │     padded canvas, gradient bg
+ │                          │ │      │     height-normalized panels
+ └──────────────────────────┘ └──────┘
+```
+
+## Features
+
+- ⚡ **One command, one image** — PC + Mobile composited side-by-side
+- 🎨 **14 background presets** + custom solid color or gradient (vertical / horizontal / diagonal)
+- 📐 **Height-normalized panels** so PC and Mobile align cleanly (no upscaling)
+- 📱 **Optional tablet panel** between PC and Mobile (`--tablet`)
+- 🌐 **Local HTTP server** auto-spawned per run — relative `CSS / JS / img / fetch` work without `file://` quirks
+- 📂 **File or folder input** — recursive `.html` discovery, output mirrors source tree
+- 🔄 **Full-page or viewport** capture (`--full-page`)
+- 🧩 **Per-device fallback** with `--separate` (keeps original native pixel resolution)
+- 🤖 **Built for Claude Code** — invoke via `/html-screenshot <path>`
 
 ## Quick start
 
-```text
+```bash
+# Single file → ./index.png next to source
 /html-screenshot ./index.html
+
+# Folder → ./site/screenshots/{tree}/{stem}.png
 /html-screenshot ./site/ --full-page --tablet
+
+# Fancy preset background, custom PC size
 /html-screenshot ./page.html --bg sunset --pc-size 1440x900
 ```
 
-Default output: `{stem}.png` next to the source file (single-file input) or under `{folder}/screenshots/` mirroring the input tree (folder input).
-
 ## Install
-
-The skill ships as a self-contained directory. Required runtime:
 
 ```bash
 pip install playwright pillow
 python -m playwright install chromium
 ```
 
-Place the folder at `~/.claude/skills/html-screenshot/` (or use as a git submodule — see below).
+Place the folder at `~/.claude/skills/html-screenshot/`, or wire it as a git submodule.
 
 ## Triggers
 
-`/html-screenshot`, "html screenshot", "HTML 스크린샷", "HTML 캡처", "HTML 캡쳐", "render HTML"
+`/html-screenshot` · `html screenshot` · `render HTML` · `webpage capture` · `PC mobile capture`
 
 ## Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `<path>` | — | (required) HTML file or directory to capture |
+| `<path>` | — | (required) HTML file or directory |
 | `--separate` | off | Save per-device files instead of compositing |
 | `--full-page` | off | Capture full scrollable page instead of viewport |
 | `--pc-size <WxH>` | `1920x1080` | PC viewport |
@@ -56,11 +95,11 @@ Place the folder at `~/.claude/skills/html-screenshot/` (or use as a git submodu
 
 `--bg` accepts three forms:
 
-**Preset names** (curated):
+### 1. Preset names
 
 | Preset | Type | Colors |
 |--------|------|--------|
-| `slate` (default) | solid | `#e2e8f0` |
+| `slate` *(default)* | solid | `#e2e8f0` |
 | `white` / `black` / `dark` | solid | white / black / `#0f172a` |
 | `purple` | gradient | `#667eea → #764ba2` |
 | `sunset` | gradient | `#ff7e5f → #feb47b` |
@@ -73,29 +112,60 @@ Place the folder at `~/.claude/skills/html-screenshot/` (or use as a git submodu
 | `candy` | gradient | `#ee9ca7 → #ffdde1` |
 | `sky` | gradient | `#74b9ff → #a29bfe` |
 
-**Custom solid color**: any CSS name or `#hex` — `--bg "#1e293b"`
+### 2. Custom solid
 
-**Custom gradient**: `color1,color2[,direction]` where direction is `diagonal` (default), `vertical`, or `horizontal` — `--bg "#0f172a,#1e293b,vertical"`
+Any CSS color name or `#hex`:
+
+```bash
+--bg "#1e293b"
+--bg "lavender"
+```
+
+### 3. Custom gradient
+
+`color1,color2[,direction]` where direction is `diagonal` *(default)*, `vertical`, or `horizontal`:
+
+```bash
+--bg "#0f172a,#1e293b,vertical"
+--bg "#667eea,#764ba2"          # diagonal
+```
 
 ## Output rules
 
-| Input | Default output (composite) | With `--separate` |
-|-------|----------------------------|-------------------|
+| Input | Default (composite) | With `--separate` |
+|-------|---------------------|-------------------|
 | `./foo.html` | `./foo.png` | `./foo-pc.png`, `./foo-mobile.png` |
 | `./site/` | `./site/screenshots/{tree}/{stem}.png` | `./site/screenshots/{tree}/{stem}-{device}.png` |
 
-In composite mode, panels are normalized to the **smallest panel height** (no upscaling), then placed side-by-side: PC → Tablet → Mobile, top-aligned within the padded canvas.
+In composite mode, panels are normalized to the **smallest panel height** (no upscaling), then placed left → right: PC → Tablet → Mobile.
 
-## Notes
+## Tips
 
-- A local HTTP server is spun up on a random free port for the input directory; it is shut down after capture. This avoids `file://` quirks (CORS, fetch).
-- For long pages, prefer `--full-page` and consider `--bg dark` with `--padding 40` for a denser presentation image.
-- `--separate` retains the original per-device pixel resolution (no resize).
+> 💡 For long pages, prefer `--full-page` and consider `--bg dark --padding 40` for a denser presentation image.
+>
+> 💡 `--separate` retains original per-device pixel resolution — useful when you need the raw frames for further compositing.
+>
+> 💡 The local HTTP server starts on a random free port and shuts down after capture — no leaked processes.
 
-## Why this exists
+## Roadmap
 
-Mobile responsive screenshots usually live in two places (DevTools then external tools), or are generated as separate files that don't read well in chat/PRs/blog posts. A single composite image with consistent height + a contrasting canvas reads at a glance and embeds cleanly anywhere.
+- [ ] Optional device chrome (browser frame around PC, phone bezel around Mobile)
+- [ ] Drop shadow on panels
+- [ ] WebP output
+- [ ] Animated GIF / MP4 from scroll-through
+
+PRs welcome.
 
 ## License
 
-MIT
+[MIT](LICENSE) © Haru
+
+## Author
+
+Built by **Haru** — building tools for makers and writers.
+
+- 🧵 Threads · [@life.of.haru](https://www.threads.net/@life.of.haru)
+- 📷 Instagram · [@life.of.haru](https://www.instagram.com/life.of.haru)
+- ✍️ Blog · [harulogs.com](https://harulogs.com/en)
+
+If this skill saved you time, a ⭐ on the repo means a lot.
