@@ -82,6 +82,7 @@ python -m playwright install chromium
 | `--only <pc\|mobile\|tablet>` | — | 지정 디바이스만 캡처 (반복 가능) |
 | `--gap <px>` | `60` | 합성 시 패널 간격 |
 | `--padding <px>` | `80` | 캔버스 외곽 여백 |
+| `--canvas-size <WxH>` | — | 최종 이미지 크기 고정 (예: `854x533`). 합성본을 비율 유지로 컨테인 축소 후 배경으로 레터박스. 블로그 썸네일 / OG 이미지 규격 맞출 때 유용 |
 | `--bg <value>` | `slate` | 배경 — 프리셋명, 단색, 그라디언트 |
 | `--out <dir>` | — | 출력 디렉토리 지정 |
 | `--format <png\|jpeg>` | `png` | 이미지 포맷 |

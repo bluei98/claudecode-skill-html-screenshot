@@ -82,6 +82,7 @@ Place the folder at `~/.claude/skills/html-screenshot/`, or wire it as a git sub
 | `--only <pc\|mobile\|tablet>` | — | Capture only the listed device(s) — repeatable |
 | `--gap <px>` | `60` | Spacing between panels in composite |
 | `--padding <px>` | `80` | Outer padding of the composite canvas |
+| `--canvas-size <WxH>` | — | Fixed final image size (e.g. `854x533`). Composite is scaled (contain) and letterboxed with the bg to fill this size exactly. Great for blog thumbnails / OG images. |
 | `--bg <value>` | `slate` | Background — preset name, solid color, or gradient |
 | `--out <dir>` | — | Override output directory |
 | `--format <png\|jpeg>` | `png` | Output format |

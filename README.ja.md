@@ -82,6 +82,7 @@ python -m playwright install chromium
 | `--only <pc\|mobile\|tablet>` | — | 指定デバイスのみキャプチャ (繰り返し可) |
 | `--gap <px>` | `60` | 合成時のパネル間隔 |
 | `--padding <px>` | `80` | キャンバス外周の余白 |
+| `--canvas-size <WxH>` | — | 最終画像サイズを固定(例:`854x533`)。合成をアスペクト比維持でコンテイン縮小し、背景でレターボックス。ブログサムネイル / OG 画像規格に便利 |
 | `--bg <value>` | `slate` | 背景 — プリセット名 / 単色 / グラデーション |
 | `--out <dir>` | — | 出力ディレクトリの指定 |
 | `--format <png\|jpeg>` | `png` | 画像フォーマット |

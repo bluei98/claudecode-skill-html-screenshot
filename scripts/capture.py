@@ -205,6 +205,7 @@ def _composite_images(
     gap: int,
     bg: str,
     padding: int,
+    canvas_size: tuple[int, int] | None = None,
 ) -> Path:
     from PIL import Image
 
@@ -221,11 +222,25 @@ def _composite_images(
             normalized.append(img.resize((new_w, target_h), Image.LANCZOS))
     inner_w = sum(img.width for img in normalized) + gap * (len(normalized) - 1)
     canvas_w, canvas_h = inner_w + padding * 2, target_h + padding * 2
-    canvas = _make_background(canvas_w, canvas_h, _resolve_bg(bg))
+    resolved_bg = _resolve_bg(bg)
+    canvas = _make_background(canvas_w, canvas_h, resolved_bg)
     x = padding
     for img in normalized:
         canvas.paste(img, (x, padding))
         x += img.width + gap
+
+    # Fit into a fixed output canvas (contain mode, bg-letterboxed)
+    if canvas_size is not None:
+        target_w, target_h_out = canvas_size
+        src_w, src_h = canvas.size
+        scale = min(target_w / src_w, target_h_out / src_h)
+        new_w = max(1, int(round(src_w * scale)))
+        new_h = max(1, int(round(src_h * scale)))
+        scaled = canvas.resize((new_w, new_h), Image.LANCZOS)
+        final = _make_background(target_w, target_h_out, resolved_bg)
+        final.paste(scaled, ((target_w - new_w) // 2, (target_h_out - new_h) // 2))
+        canvas = final
+
     save_kwargs: dict = {}
     if fmt == "jpeg":
         save_kwargs["quality"] = quality
@@ -378,6 +393,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--separate", action="store_true", help="Keep per-device files instead of composing a single side-by-side image")
     parser.add_argument("--gap", type=int, default=60, help="Gap (px) between panels in composite mode")
     parser.add_argument("--padding", type=int, default=80, help="Outer canvas padding (px) in composite mode")
+    parser.add_argument("--canvas-size", type=_parse_size, default=None,
+                        help="Fixed final image size WxH (e.g. 854x533). Composite is scaled (contain) and letterboxed with the bg to fill this size exactly.")
     parser.add_argument(
         "--bg",
         default="slate",
@@ -434,6 +451,7 @@ def main(argv: list[str] | None = None) -> int:
                 gap=args.gap,
                 bg=args.bg,
                 padding=args.padding,
+                canvas_size=args.canvas_size,
             )
             composites.append({
                 "html": str(html_file),
